@@ -14,7 +14,7 @@ public class ArrayList<T> implements List<T> {
 
     @Override
     public void add(T value) {
-        ensureCapacity();
+        ensureCapacity(size + 1);
         array[size++] = value;
     }
 
@@ -24,7 +24,7 @@ public class ArrayList<T> implements List<T> {
             throw new ArrayListIndexOutOfBoundsException("Index " + index + " is out of bounds");
         }
 
-        ensureCapacity();
+        ensureCapacity(size + 1);
 
         for (int i = size; i > index; i--) {
             array[i] = array[i - 1];
@@ -36,23 +36,10 @@ public class ArrayList<T> implements List<T> {
 
     @Override
     public void addAll(List<T> list) {
-        int requiredCapacity = size + list.size();
-
-        if (array.length < requiredCapacity) {
-            int newCapacity = array.length;
-
-            while (newCapacity < requiredCapacity) {
-                newCapacity *= 2;
-            }
-
-            T[] newArray = (T[]) new Object[newCapacity];
-
-            System.arraycopy(array, 0, newArray, 0, size);
-            array = newArray;
-        }
+        ensureCapacity(size + list.size());
 
         for (int i = 0; i < list.size(); i++) {
-            this.add(list.get(i));
+            array[size++] = list.get(i);
         }
     }
 
@@ -85,6 +72,7 @@ public class ArrayList<T> implements List<T> {
         for (int i = index; i < size - 1; i++) {
             array[i] = array[i + 1];
         }
+
         array[--size] = null;
         return removed;
     }
@@ -92,7 +80,8 @@ public class ArrayList<T> implements List<T> {
     @Override
     public T remove(T element) {
         for (int i = 0; i < size; i++) {
-            if (array[i] == element || (array[i] != null && array[i].equals(element))) {
+            if ((array[i] == null && element == null)
+                    || (array[i] != null && array[i].equals(element))) {
                 T removed = array[i];
 
                 for (int j = i; j < size - 1; j++) {
@@ -116,10 +105,15 @@ public class ArrayList<T> implements List<T> {
         return size == 0;
     }
 
-    private void ensureCapacity() {
-        if (size == array.length) {
-            T[] newArray = (T[]) new Object[array.length * 2];
-            System.arraycopy(array, 0, newArray, 0, array.length);
+    private void ensureCapacity(int minCapacity) {
+        if (array.length < minCapacity) {
+            int newCapacity = array.length + array.length / 2;
+            if (newCapacity < minCapacity) {
+                newCapacity = minCapacity;
+            }
+
+            T[] newArray = (T[]) new Object[newCapacity];
+            System.arraycopy(array, 0, newArray, 0, size);
             array = newArray;
         }
     }
