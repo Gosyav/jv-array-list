@@ -1,6 +1,7 @@
 package core.basesyntax;
 
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 public class ArrayList<T> implements List<T> {
     private static final int DEFAULT_CAPACITY = 10;
@@ -9,6 +10,7 @@ public class ArrayList<T> implements List<T> {
     private T[] elements;
     private int size;
 
+    @SuppressWarnings("unchecked")
     public ArrayList() {
         this.elements = (T[]) new Object[DEFAULT_CAPACITY];
         this.size = 0;
@@ -35,13 +37,9 @@ public class ArrayList<T> implements List<T> {
         if (toAdd == 0) {
             return;
         }
-        Object[] snapshot = new Object[toAdd];
-        for (int i = 0; i < toAdd; i++) {
-            snapshot[i] = list.get(i);
-        }
         ensureCapacity(size + toAdd);
-        for (Object e : snapshot) {
-            elements[size++] = (T) e;
+        for (int i = 0; i < toAdd; i++) {
+            elements[size++] = list.get(i);
         }
     }
 
@@ -60,21 +58,14 @@ public class ArrayList<T> implements List<T> {
     @Override
     public T remove(int index) {
         checkElementIndex(index);
-        T removed = elements[index];
-        System.arraycopy(elements, index + 1, elements, index, size - index - 1);
-        elements[--size] = null;
-        return removed;
+        return fastRemove(index);
     }
 
     @Override
     public T remove(T element) {
         for (int i = 0; i < size; i++) {
-            if ((elements[i] == null && element == null)
-                    || (elements[i] != null && elements[i].equals(element))) {
-                T removed = elements[i];
-                System.arraycopy(elements, i + 1, elements, i, size - i - 1);
-                elements[--size] = null;
-                return removed;
+            if (Objects.equals(elements[i], element)) {
+                return fastRemove(i);
             }
         }
         throw new NoSuchElementException("Element " + element + " not found");
@@ -89,6 +80,8 @@ public class ArrayList<T> implements List<T> {
     public boolean isEmpty() {
         return size == 0;
     }
+
+    /* ==================== Helpers ==================== */
 
     @SuppressWarnings("unchecked")
     private void ensureCapacity(int minCapacity) {
@@ -112,5 +105,15 @@ public class ArrayList<T> implements List<T> {
             throw new ArrayListIndexOutOfBoundsException(
                     "Index " + index + " out of bounds for size " + size);
         }
+    }
+
+    private T fastRemove(int index) {
+        T removed = elements[index];
+        int numMoved = size - index - 1;
+        if (numMoved > 0) {
+            System.arraycopy(elements, index + 1, elements, index, numMoved);
+        }
+        elements[--size] = null;
+        return removed;
     }
 }
