@@ -1,19 +1,17 @@
 package core.basesyntax;
 
 import java.util.NoSuchElementException;
-import java.util.Objects;
 
 public class ArrayList<T> implements List<T> {
     private static final int DEFAULT_CAPACITY = 10;
     private static final double GROWTH_FACTOR = 1.5;
 
     private T[] elements;
-    private int size;
+    private int size = 0;
 
     @SuppressWarnings("unchecked")
     public ArrayList() {
         this.elements = (T[]) new Object[DEFAULT_CAPACITY];
-        this.size = 0;
     }
 
     @Override
@@ -64,10 +62,12 @@ public class ArrayList<T> implements List<T> {
     @Override
     public T remove(T element) {
         for (int i = 0; i < size; i++) {
-            if (Objects.equals(elements[i], element)) {
+            if ((element == null && elements[i] == null)
+                    || (element != null && element.equals(elements[i]))) {
                 return fastRemove(i);
             }
         }
+
         throw new NoSuchElementException("Element " + element + " not found");
     }
 
@@ -80,8 +80,6 @@ public class ArrayList<T> implements List<T> {
     public boolean isEmpty() {
         return size == 0;
     }
-
-    /* ==================== Helpers ==================== */
 
     @SuppressWarnings("unchecked")
     private void ensureCapacity(int minCapacity) {
